@@ -1,7 +1,7 @@
 import { Header } from "../components/Header";
 import { HomeBody } from "../components/HomeBody";
 
-export const HomePage = () => {
+export const HomePage = ()=> {
    
 
     return <div className="bg-customBeige min-h-screen  dark:bg-black">

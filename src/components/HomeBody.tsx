@@ -1,4 +1,6 @@
+import { useNavigate } from "react-router-dom"
 export const HomeBody = (): JSX.Element => {
+    const navigate = useNavigate();   
     return <div className="py-20">
 
         <div className=" py-5 animate-slidein opacity-0 [--slidein-delay:300ms]">
@@ -12,7 +14,7 @@ export const HomeBody = (): JSX.Element => {
         </div>
 
         <div className="flex justify-center pt-10 py-5 animate-slidein opacity-0 [--slidein-delay:700ms] ...">
-            <button type="button" className="flex justify-start text-white bg-blue-700 hover:bg-blue-800 focus:outline-none focus:ring-4 focus:ring-blue-300 font-medium rounded-full text-md px-5 py-2.5 text-center me-2 mb-2
+            <button onClick={()=>{navigate("/create-wallet")}} type="button" className="flex justify-start text-white bg-blue-700 hover:bg-blue-800 focus:outline-none focus:ring-4 focus:ring-blue-300 font-medium rounded-full text-md px-5 py-2.5 text-center me-2 mb-2
                  dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">Let's Get Started <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" className="size-5">
                     <path stroke-linecap="round" stroke-linejoin="round" d="m8.25 4.5 7.5 7.5-7.5 7.5" />
                 </svg>
