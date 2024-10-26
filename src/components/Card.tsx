@@ -1,5 +1,19 @@
-export const Card = (): JSX.Element => {
-    return <div className="flex flex-col bg-inherit py-4 px-12">
+import { generateMnemonic } from "bip39"
+import { useState } from "react"
+
+import { mnemonicToSeed } from "bip39";
+import { derivePath } from "ed25519-hd-key";
+import { Keypair } from "@solana/web3.js";
+import nacl from "tweetnacl"
+
+
+export const Card =(): JSX.Element => {
+        const [mnemonic,setMnemonic]=useState("");
+        const [currentIndex, setCurrentIndex] = useState(0);
+        const [publicKeys, setPublicKeys] = useState([]as any);
+        const [privateKeys,setPrivateKeys] = useState([]as any);
+        console.log(mnemonic)
+         return <div className="flex flex-col bg-inherit py-4 px-12">
         <div className="py-4">
             <div className="pl-[116px] pr-[205px] py-8">
                 <div className="text-4xl text-black font-bold font-mono dark:text-customred pb-4 ">Seed Phrase</div>
@@ -12,8 +26,12 @@ export const Card = (): JSX.Element => {
                                     <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m19 19-4-4m0-7A7 7 0 1 1 1 8a7 7 0 0 1 14 0Z" />
                                 </svg>
                             </div>
-                            <input type="text" id="search" className="block w-full p-4 ps-10 text-sm text-gray-900 border border-gray-300 rounded-lg bg-gray-50 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" placeholder="Enter your Seed phrase or generate Automatically" required />
-                            <button type="button" className="text-white absolute end-2.5 bottom-2.5 bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-4 py-2 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">Generate/Submit</button>
+                        <input type="text" id="search" value={mnemonic} className="block w-full p-4 ps-10 text-sm text-gray-900 border border-gray-300 rounded-lg bg-gray-50 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" placeholder="Enter your Seed phrase or generate Automatically" required />
+                            <button type="button"  onClick={async()=>{
+                                const mn=await generateMnemonic();
+                                setMnemonic(mn);
+                            }} 
+                            className="text-white absolute end-2.5 bottom-2.5 bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-4 py-2 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">Generate</button>
                         </div>
                     </form>
                 </div>
@@ -25,26 +43,30 @@ export const Card = (): JSX.Element => {
                     <div className="text-white space-y-4 flex">
                         <div className="text-xl font-bold lead-xl bold pt-4">Solana Wallet</div>
                         <div className="pl-4 pb-2">
-                        <button type="button" className=" text-white  bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-4 py-2 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">Create Wallet</button>
+                        <button type="button" onClick={async()=>{ 
+                            const seed = mnemonicToSeed(mnemonic);
+                            console.log(seed)
+                            const path = `m/44'/501'/${currentIndex}'/0'`;
+                            const derivedSeed = derivePath(path, seed.toString("hex")).key;
+                            const secret = nacl.sign.keyPair.fromSeed(derivedSeed).secretKey;
+                            const keypair = Keypair.fromSecretKey(secret); 
+                            setCurrentIndex(currentIndex + 1)
+                            setPublicKeys([...publicKeys, keypair.publicKey]);  
+                            setPrivateKeys([...privateKeys,keypair.secretKey])
+                            console.log(publicKeys)
+                            console.log(keypair)
+                        }} 
+                        className=" text-white  bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-4 py-2 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800" >Create Wallet</button>
                         </div>                    
                     </div>
                     
                     <div className="flex justify-between pt-8">
-                        <ul className="flex flex-col gap-y-2.5">
-                            <li className="flex space-x-3 text-white">
-                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" 
-                            className="size-6 "><path stroke-linecap="round" stroke-linejoin="round" 
-                            d="M21 12a2.25 2.25 0 0 0-2.25-2.25H15a3 3 0 1 1-6 0H5.25A2.25 2.25 0 0 0 3 12m18 0v6a2.25 2.25 0 0 1-2.25 2.25H5.25A2.25 2.25 0 0 1 3 18v-6m18 0V9M3 12V9m18 0a2.25 2.25 0 0 0-2.25-2.25H5.25A2.25 2.25 0 0 0 3 9m18 0V6a2.25 2.25 0 0 0-2.25-2.25H5.25A2.25 2.25 0 0 0 3 6v3" /></svg>
-                                <span className="paragraph-l font-bold text-xl ">Wallet 1 :<ul>
-                                    <li className="flex space-x-3 text-white ">
-                                        Public Key:
-                                    </li>
-                                    <li className="flex space-x-3 text-white pt-1">
-                                        Private Key:
-                                    </li>
-                                </ul></span>
-                                
-                            </li>                                
+                        <ul className="flex flex-col gap-y-2.5">     
+                        {publicKeys.map((p,index)=><div>
+                        Wallet {index+1} <br/>
+                        Public key: {p.toBase58()} <br/>
+                        Private Key :{privateKeys[index]}
+                        </div>)}                      
                         </ul>
                     </div>
                 </div>
@@ -60,20 +82,7 @@ export const Card = (): JSX.Element => {
                     
                     <div className="flex justify-between pt-8">
                         <ul className="flex flex-col gap-y-2.5">
-                            <li className="flex space-x-3 text-white">
-                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" 
-                            className="size-6 "><path stroke-linecap="round" stroke-linejoin="round" 
-                            d="M21 12a2.25 2.25 0 0 0-2.25-2.25H15a3 3 0 1 1-6 0H5.25A2.25 2.25 0 0 0 3 12m18 0v6a2.25 2.25 0 0 1-2.25 2.25H5.25A2.25 2.25 0 0 1 3 18v-6m18 0V9M3 12V9m18 0a2.25 2.25 0 0 0-2.25-2.25H5.25A2.25 2.25 0 0 0 3 9m18 0V6a2.25 2.25 0 0 0-2.25-2.25H5.25A2.25 2.25 0 0 0 3 6v3" /></svg>
-                                <span className="paragraph-l font-bold text-xl ">Wallet 1 :<ul>
-                                    <li className="flex space-x-3 text-white ">
-                                        Public Key:
-                                    </li>
-                                    <li className="flex space-x-3 text-white pt-1">
-                                        Private Key:
-                                    </li>
-                                </ul></span>
-                                
-                            </li>                                
+                                                     
                         </ul>
                     </div>
                 </div>
@@ -81,3 +90,23 @@ export const Card = (): JSX.Element => {
         </div>
     </div>
 }
+
+
+
+
+
+// return <div><li className="flex space-x-3 text-white">
+//                             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" 
+//                             className="size-6 "><path stroke-linecap="round" stroke-linejoin="round" 
+//                             d="M21 12a2.25 2.25 0 0 0-2.25-2.25H15a3 3 0 1 1-6 0H5.25A2.25 2.25 0 0 0 3 12m18 0v6a2.25 2.25 0 0 1-2.25 2.25H5.25A2.25 2.25 0 0 1 3 18v-6m18 0V9M3 12V9m18 0a2.25 2.25 0 0 0-2.25-2.25H5.25A2.25 2.25 0 0 0 3 9m18 0V6a2.25 2.25 0 0 0-2.25-2.25H5.25A2.25 2.25 0 0 0 3 6v3" /></svg>
+//                                 <span className="paragraph-l font-bold text-xl ">Wallet 1 :<ul>
+//                                     <li className="flex space-x-3 text-white ">
+//                                         Public Key:
+//                                     </li>
+//                                     <li className="flex space-x-3 text-white pt-1">
+//                                         Private Key:
+//                                     </li>
+//                                 </ul></span>
+                                
+//                             </li>     
+//                             </div>

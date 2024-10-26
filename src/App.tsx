@@ -11,23 +11,14 @@ import { mnemonicToSeed } from "bip39";
 import { derivePath } from "ed25519-hd-key";
 import { Keypair } from "@solana/web3.js";
 import nacl from "tweetnacl"
-defineConfig({
-  plugins: [react(), nodePolyfills()],
-})
+// defineConfig({
+//   plugins: [react(), nodePolyfills()],
+// })
 
 function App() {
-  
-  const [walletType,setWalletType]=useState("");
-  const [mnemonics,setMnemonics]=useState("")
-  const [solanaWallet,setSolanaWallet]=useState([])
-  const [ethWallet,setEthWallet]=useState([])
 
-const generate:Function = async function (){
-  const mn:string = await generateMnemonic()
-  setMnemonics(mn)
-}
 
-  return (
+return (
     <BrowserRouter>
     <Routes>
     <Route path="/" element={<HomePage/>}></Route>
