@@ -1,18 +1,44 @@
-import { generateMnemonic } from "bip39"
-import { useState } from "react"
-
-import { mnemonicToSeed } from "bip39";
-import { derivePath } from "ed25519-hd-key";
-import { Keypair } from "@solana/web3.js";
+import { useState} from "react"
 import nacl from "tweetnacl"
 
 
-export const Card =(): JSX.Element => {
-        const [mnemonic,setMnemonic]=useState("");
-        const [currentIndex, setCurrentIndex] = useState(0);
-        const [publicKeys, setPublicKeys] = useState([]as any);
-        const [privateKeys,setPrivateKeys] = useState([]as any);
-        console.log(mnemonic)
+import { generateMnemonic, mnemonicToSeedSync } from "bip39";
+import { derivePath } from "ed25519-hd-key";
+import { Keypair } from "@solana/web3.js";
+import { Buffer } from "buffer";
+
+export const Card = (): JSX.Element => {
+    const [mnemonic, setMnemonic] = useState("");
+    const [currentIndex, setCurrentIndex] = useState(0);
+    const [publicKeys, setPublicKeys] = useState([] as any);
+    const [privateKeys, setPrivateKeys] = useState([] as any);
+    const [toggleStates, setToggleStates] = useState({} as Record<number, boolean>);
+
+    function togglePrivateKey(index: number) {
+        setToggleStates(prevStates => ({
+            ...prevStates,
+            [index]: !prevStates[index]
+        }));
+    }
+
+        async function generateWallet(){
+            const seed = mnemonicToSeedSync(mnemonic);
+            console.log(seed)
+            const path = `m/44'/501'/${currentIndex}'/0'`;
+            const derivedSeed = derivePath(path, seed.toString("hex")).key;
+            console.log(derivedSeed)
+            const secret = nacl.sign.keyPair.fromSeed(derivedSeed).secretKey;
+            console.log(secret)
+            const keypair = Keypair.fromSecretKey(
+                Buffer.from(nacl.sign.keyPair.fromSeed(derivedSeed).secretKey)
+              );
+            console.log(keypair)
+            const privateKey = Buffer.from(keypair.secretKey).toString("hex");
+            const publicKey = keypair.publicKey.toBase58();
+            setCurrentIndex(currentIndex + 1)
+            setPublicKeys([...publicKeys,publicKey]);
+            setPrivateKeys([...privateKeys, privateKey])
+        }
          return <div className="flex flex-col bg-inherit py-4 px-12">
         <div className="py-4">
             <div className="pl-[116px] pr-[205px] py-8">
@@ -32,61 +58,33 @@ export const Card =(): JSX.Element => {
                                 setMnemonic(mn);
                             }} 
                             className="text-white absolute end-2.5 bottom-2.5 bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-4 py-2 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">Generate</button>
-                        </div>
-                    </form>
-                </div>
-            </div>
-        </div>
-        <div className="flex flex-col px-20 md:px-10 md:flex-row items-center justify-center gap-6">
-            <div>
-                <div className="px-9 pt-10 pb-14 bg-customorange rounded-b-lg">
-                    <div className="text-white space-y-4 flex">
-                        <div className="text-xl font-bold lead-xl bold pt-4">Solana Wallet</div>
-                        <div className="pl-4 pb-2">
-                        <button type="button" onClick={async()=>{ 
-                            const seed = mnemonicToSeed(mnemonic);
-                            console.log(seed)
-                            const path = `m/44'/501'/${currentIndex}'/0'`;
-                            const derivedSeed = derivePath(path, seed.toString("hex")).key;
-                            const secret = nacl.sign.keyPair.fromSeed(derivedSeed).secretKey;
-                            const keypair = Keypair.fromSecretKey(secret); 
-                            setCurrentIndex(currentIndex + 1)
-                            setPublicKeys([...publicKeys, keypair.publicKey]);  
-                            setPrivateKeys([...privateKeys,keypair.secretKey])
-                            console.log(publicKeys)
-                            console.log(keypair)
-                        }} 
-                        className=" text-white  bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-4 py-2 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800" >Create Wallet</button>
-                        </div>                    
-                    </div>
-                    
-                    <div className="flex justify-between pt-8">
-                        <ul className="flex flex-col gap-y-2.5">     
-                        {publicKeys.map((p,index)=><div>
-                        Wallet {index+1} <br/>
-                        Public key: {p.toBase58()} <br/>
-                        Private Key :{privateKeys[index]}
-                        </div>)}                      
-                        </ul>
-                    </div>
-                </div>
-            </div>
-            <div className="">
-            <div className="px-9 pt-10 pb-14 bg-custompurple rounded-b-lg">
-                    <div className="text-white space-y-4 flex">
-                        <div className="text-xl font-bold lead-xl bold pt-4">Solana Wallet</div>
-                        <div className="pl-4 pb-2">
-                        <button type="button" className=" text-white  bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-4 py-2 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">Create Wallet</button>
-                        </div>                    
-                    </div>
-                    
-                    <div className="flex justify-between pt-8">
-                        <ul className="flex flex-col gap-y-2.5">
-                                                     
-                        </ul>
-                    </div>
-                </div>
-            </div>
+                             </div>
+                         </form>
+                     </div>
+                 </div>
+             </div>
+             <div className="ps-28">
+                 <button onClick={generateWallet} className=" bg-blue-700 text-white rounded-md p-2">Create Wallet</button>
+                 {publicKeys.map((p, index) => {
+                     return <div>
+                         <div className="flex pt-10">
+                             <div className="text-lg text-black dark:text-white ">
+                                 <div className="py-2">Wallet {index}</div>
+                                 <div className="flex py-1">
+                                     <div className="pr-6">Public Key:</div> <input className=" bg-blue-700 text-white text-lg rounded-md p-2 size-auto" value={p} />
+                                 </div>
+
+                                 <div className="flex py-1"><div className="pr-4">Private Key:</div> <input className="bg-blue-700 text-white text-lg rounded-md p-2 size-auto"  value={toggleStates[index] ?  privateKeys[index] : ""} />
+                                     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" onClick={()=>togglePrivateKey(index)} className="size-8 pl-2 pt-2">
+                                         <path stroke-linecap="round" stroke-linejoin="round" d="M2.036 12.322a1.012 1.012 0 0 1 0-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178Z" />
+                                         <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" />
+                                     </svg>
+                                 </div>
+                             </div>
+                         </div>
+                     </div>
+                 }
+                 )}
         </div>
     </div>
 }
