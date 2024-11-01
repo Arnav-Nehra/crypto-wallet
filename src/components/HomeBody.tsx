@@ -9,7 +9,7 @@ export const HomeBody = (): JSX.Element => {
 
         <div className="animate-slidein opacity-0  [--slidein-delay:300ms] text-center font-bold text-4xl text-gray-700 pt-4 dark:text-customred">
             <div className="pb-5">A Crypto Wallet</div>
-            <img loading="lazy" src="../image.png"
+            <img loading="lazy" src="https://cryptologos.cc/logos/bitcoin-btc-logo.svg?v=035"
                 className="bg-auto pt-15 w-30 h-40 mx-auto" alt="Icon" />
         </div>
 
