@@ -10,7 +10,7 @@ import { Buffer } from "buffer";
 export const Card = (): JSX.Element => {
     const [mnemonic, setMnemonic] = useState("");
     const [currentIndex, setCurrentIndex] = useState(0);  
-    const [pair,setPair]=useState([]as any)
+    const [pair, setPair] = useState<{ publicKey: string; privateKey: string }[]>([])
     const [toggleStates, setToggleStates] = useState({} as Record<number, boolean>)
     function togglePrivateKey(index: number) {
         setToggleStates(prevStates => ({
@@ -69,17 +69,17 @@ export const Card = (): JSX.Element => {
                  </div>
         </div>
         <div className="ps-28">
-            <button onClick={generateWallet} className=" bg-blue-700 text-white rounded-md p-2">Create Solana Wallet</button>
-            {pair.map((p, index) => {
+            <button onClick={generateWallet} className=" bg-blue-700 rounded-lg text-white p-2">Create Solana Wallet</button>
+            {pair.map((p: { publicKey: string; privateKey: string }, index: number) => {
 
                 return <div className="pt-4">
-                    <a className="block max-w-fit p-6  bg-white border border-gray-200 rounded-lg shadow hover:bg-gray-100 dark:bg-gray-800 dark:border-gray-700 dark:hover:bg-gray-700">
+                    <a className="block max-w-fit p-6  bg-white border border-gray-400 rounded-lg shadow hover:bg-gray-100 dark:bg-gray-800 dark:border-gray-700 dark:hover:bg-gray-700">
                     <div>
                         <div className="flex">
                             <div className="text-lg text-black dark:text-white ">
                                 <div className="pb-2">Wallet {index + 1}</div>
                                 <div className="flex py-1">
-                                    <div className="pr-6">Public Key:</div> <input className=" bg-blue-700 text-white text-lg rounded-md p-2 size-auto"
+                                    <div className="pr-6">Public Key:</div> <input className=" bg-gray-500 text-white text-lg rounded-md p-2 size-auto"
                                         defaultValue={p.publicKey} />
                                     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" onClick={() => copy(p.publicKey, "publicKey")} className="size-8 pl-2 pt-2">
                                         <path stroke-linecap="round" stroke-linejoin="round" d="M8.25 7.5V6.108c0-1.135.845-2.098 1.976-2.192.373-.03.748-.057 1.123-.08M15.75 18H18a2.25 2.25 0 0 0 2.25-2.25V6.108c0-1.135-.845-2.098-1.976-2.192a48.424 48.424 0 0 0-1.123-.08M15.75 18.75v-1.875a3.375 3.375 0 0 0-3.375-3.375h-1.5a1.125 1.125 0 0 1-1.125-1.125v-1.5A3.375 3.375 0 0 0 6.375 7.5H5.25m11.9-3.664A2.251 2.251 0 0 0 15 2.25h-1.5a2.251 2.251 0 0 0-2.15 1.586m5.8 0c.065.21.1.433.1.664v.75h-6V4.5c0-.231.035-.454.1-.664M6.75 7.5H4.875c-.621 0-1.125.504-1.125 1.125v12c0 .621.504 1.125 1.125 1.125h9.75c.621 0 1.125-.504 1.125-1.125V16.5a9 9 0 0 0-9-9Z" />
@@ -105,23 +105,3 @@ export const Card = (): JSX.Element => {
         </div>
     </div>
 }
-
-
-
-
-
-// return <div><li className="flex space-x-3 text-white">
-//                             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" 
-//                             className="size-6 "><path stroke-linecap="round" stroke-linejoin="round" 
-//                             d="M21 12a2.25 2.25 0 0 0-2.25-2.25H15a3 3 0 1 1-6 0H5.25A2.25 2.25 0 0 0 3 12m18 0v6a2.25 2.25 0 0 1-2.25 2.25H5.25A2.25 2.25 0 0 1 3 18v-6m18 0V9M3 12V9m18 0a2.25 2.25 0 0 0-2.25-2.25H5.25A2.25 2.25 0 0 0 3 9m18 0V6a2.25 2.25 0 0 0-2.25-2.25H5.25A2.25 2.25 0 0 0 3 6v3" /></svg>
-//                                 <span className="paragraph-l font-bold text-xl ">Wallet 1 :<ul>
-//                                     <li className="flex space-x-3 text-white ">
-//                                         Public Key:
-//                                     </li>
-//                                     <li className="flex space-x-3 text-white pt-1">
-//                                         Private Key:
-//                                     </li>
-//                                 </ul></span>
-                                
-//                             </li>     
-//                             </div>
